@@ -1,5 +1,7 @@
 """Modul untuk preprocessing data dalam komponen TFX Transform."""
 
+# pylint: disable=import-error
+
 from typing import Dict
 import tensorflow as tf
 import tensorflow_transform as tft
@@ -29,7 +31,7 @@ LABEL_KEY = "income"
 
 
 def transformed_name(key: str) -> str:
-    """Helper untuk menambahkan suffix pada nama fitur yang telah ditransformasikan."""
+    """Helper untuk menambahkan suffix pada nama fitur."""
     return f"{key}_xf"
 
 
@@ -55,8 +57,6 @@ def preprocessing_fn(inputs: Dict[str, tf.Tensor]) -> Dict[str, tf.Tensor]:
         outputs[transformed_name(feature)] = tft.compute_and_apply_vocabulary(cat_val)
 
     # Transformasi label
-    label = inputs[LABEL_KEY]
-    is_above_50k = tf.logical_or(tf.equal(label, ">50K"), tf.equal(label, ">50K."))
-    outputs[transformed_name(LABEL_KEY)] = tf.cast(is_above_50k, tf.int64)
+    outputs[transformed_name(LABEL_KEY)] = tf.cast(inputs[LABEL_KEY], tf.int64)
 
     return outputs
