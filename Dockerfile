@@ -10,8 +10,7 @@ ENV MODEL_NAME=adult-income-model
 EXPOSE 8501
 
 # Jalankan TF Serving dengan opsi pemantauan Prometheus aktif
-CMD ["tensorflow_model_server", \
-     "--port=8500", \
+CMD ["--port=8500", \
      "--rest_api_port=8501", \
      "--model_name=adult-income-model", \
      "--model_base_path=/models/adult-income-model", \
