@@ -1,10 +1,14 @@
+"""Modul untuk tuning hyperparameter menggunakan KerasTuner dalam TFX."""
+
+# pylint: disable=duplicate-code
+
 from typing import NamedTuple, Dict, Any, List
 import tensorflow as tf
 import tensorflow_transform as tft
 import keras_tuner as kt
 from tfx.components.trainer.fn_args_utils import FnArgs
 
-from modules.transform import (
+from modules.transform import (  # pylint: disable=import-error
     NUMERICAL_FEATURES,
     CATEGORICAL_FEATURES,
     LABEL_KEY,
@@ -20,13 +24,12 @@ TunerFnResult = NamedTuple(
 def build_model(
     hp: kt.HyperParameters, tf_transform_output: tft.TFTransformOutput
 ) -> tf.keras.Model:
-    # Bangun model dengan arsitektur dinamis berdasarkan hyperparameter
-    del tf_transform_output  # variable tidak digunakan
+    """Build model Keras dengan hyperparameter dinamis."""
+    del tf_transform_output
 
     input_features: List[tf.keras.Input] = []
     encoded_features: List[tf.Tensor] = []
 
-    # Input layer fitur numerik (float32)
     for feature in NUMERICAL_FEATURES:
         inp = tf.keras.Input(
             shape=(1,), name=transformed_name(feature), dtype=tf.float32
@@ -34,30 +37,30 @@ def build_model(
         input_features.append(inp)
         encoded_features.append(inp)
 
-    # Konversi fitur kategorikal dari int64 ke float32
     for feature in CATEGORICAL_FEATURES:
         inp = tf.keras.Input(shape=(1,), name=transformed_name(feature), dtype=tf.int64)
         input_features.append(inp)
         encoded_features.append(tf.cast(inp, tf.float32))
 
-    concat_inputs = tf.keras.layers.concatenate(encoded_features)
-    x = concat_inputs
+    x = tf.keras.layers.concatenate(encoded_features)
 
-    num_layers = hp.Int("num_layers", min_value=1, max_value=3, step=1)
-    for i in range(num_layers):
-        units = hp.Int(f"units_{i}", min_value=32, max_value=128, step=32)
-        x = tf.keras.layers.Dense(units, activation="relu")(x)
+    for i in range(hp.Int("num_layers", min_value=1, max_value=3, step=1)):
+        x = tf.keras.layers.Dense(
+            hp.Int(f"units_{i}", min_value=32, max_value=128, step=32),
+            activation="relu",
+        )(x)
         x = tf.keras.layers.BatchNormalization()(x)
-
-        dropout_rate = hp.Float(f"dropout_{i}", min_value=0.1, max_value=0.4, step=0.1)
-        x = tf.keras.layers.Dropout(dropout_rate)(x)
+        x = tf.keras.layers.Dropout(
+            hp.Float(f"dropout_{i}", min_value=0.1, max_value=0.4, step=0.1)
+        )(x)
 
     outputs = tf.keras.layers.Dense(1, activation="sigmoid")(x)
     model = tf.keras.Model(inputs=input_features, outputs=outputs)
 
-    learning_rate = hp.Choice("learning_rate", values=[1e-2, 1e-3, 1e-4])
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+        optimizer=tf.keras.optimizers.Adam(
+            learning_rate=hp.Choice("learning_rate", values=[1e-2, 1e-3, 1e-4])
+        ),
         loss="binary_crossentropy",
         metrics=["accuracy"],
     )
@@ -70,7 +73,7 @@ def input_fn(
     tf_transform_output: tft.TFTransformOutput,
     batch_size: int = 32,
 ) -> tf.data.Dataset:
-    # Generate fitur dan label untuk tuning/pelatihan
+    """Generate fitur dan label untuk tuning/training."""
     transform_feature_spec = tf_transform_output.transformed_feature_spec().copy()
 
     dataset = tf.data.experimental.make_batched_features_dataset(
@@ -86,7 +89,7 @@ def input_fn(
 
 
 def tuner_fn(fn_args: FnArgs) -> TunerFnResult:
-    # Callback untuk komponen Tuner TFX
+    """Callback untuk komponen Tuner TFX."""
     tf_transform_output = tft.TFTransformOutput(fn_args.transform_graph_path)
 
     train_dataset = input_fn(fn_args.train_files, tf_transform_output, batch_size=32)

@@ -1,3 +1,5 @@
+"""Modul untuk preprocessing data dalam komponen TFX Transform."""
+
 from typing import Dict
 import tensorflow as tf
 import tensorflow_transform as tft
@@ -27,12 +29,19 @@ LABEL_KEY = "income"
 
 
 def transformed_name(key: str) -> str:
-    # Helper untuk menambahkan suffix pada nama fitur yang telah ditransformasikan
+    """Helper untuk menambahkan suffix pada nama fitur yang telah ditransformasikan."""
     return f"{key}_xf"
 
 
 def preprocessing_fn(inputs: Dict[str, tf.Tensor]) -> Dict[str, tf.Tensor]:
-    # Callback untuk komponen Transform TFX
+    """Callback untuk komponen Transform TFX.
+
+    Args:
+        inputs: Dictionary dari fitur input.
+
+    Returns:
+        Dictionary dari fitur yang telah ditransformasikan.
+    """
     outputs: Dict[str, tf.Tensor] = {}
 
     # Transformasi fitur numerik (Standarisasi Z-score)

@@ -1,9 +1,13 @@
+"""Modul untuk training model neural network dalam komponen Trainer TFX."""
+
+# pylint: disable=duplicate-code
+
 from typing import List, Dict, Any, Callable
 import tensorflow as tf
 import tensorflow_transform as tft
 from tfx.components.trainer.fn_args_utils import FnArgs
 
-from modules.transform import (
+from modules.transform import (  # pylint: disable=import-error
     NUMERICAL_FEATURES,
     CATEGORICAL_FEATURES,
     LABEL_KEY,
@@ -16,7 +20,7 @@ def input_fn(
     tf_transform_output: tft.TFTransformOutput,
     batch_size: int = 32,
 ) -> tf.data.Dataset:
-    # Generate dataset untuk pelatihan dan evaluasi model
+    """Generate dataset untuk training dan evaluation model."""
     transform_feature_spec = tf_transform_output.transformed_feature_spec().copy()
 
     dataset = tf.data.experimental.make_batched_features_dataset(
@@ -35,8 +39,8 @@ def build_model_from_hyperparameters(
     hyperparameters: Dict[str, Any],
     tf_transform_output: tft.TFTransformOutput,
 ) -> tf.keras.Model:
-    # Bangun model dengan arsitektur dinamis berdasarkan hyperparameter
-    del tf_transform_output  # Variable tidak digunakan
+    """Build model Keras dengan hyperparameter dinamis."""
+    del tf_transform_output
     hp_dict = hyperparameters.get("values", {})
 
     input_features: List[tf.keras.Input] = []
@@ -54,23 +58,20 @@ def build_model_from_hyperparameters(
         input_features.append(inp)
         encoded_features.append(tf.cast(inp, tf.float32))
 
-    concat_inputs = tf.keras.layers.concatenate(encoded_features)
-    x = concat_inputs
+    x = tf.keras.layers.concatenate(encoded_features)
 
-    num_layers = hp_dict.get("num_layers", 2)
-    for i in range(num_layers):
-        units = hp_dict.get(f"units_{i}", 64)
-        x = tf.keras.layers.Dense(units, activation="relu")(x)
+    for i in range(hp_dict.get("num_layers", 2)):
+        x = tf.keras.layers.Dense(hp_dict.get(f"units_{i}", 64), activation="relu")(x)
         x = tf.keras.layers.BatchNormalization()(x)
-        dropout_rate = hp_dict.get(f"dropout_{i}", 0.2)
-        x = tf.keras.layers.Dropout(dropout_rate)(x)
+        x = tf.keras.layers.Dropout(hp_dict.get(f"dropout_{i}", 0.2))(x)
 
-    outputs = tf.keras.layers.Dense(1, activation="sigmoid")(x)
-    model = tf.keras.Model(inputs=input_features, outputs=outputs)
+    output_layer = tf.keras.layers.Dense(1, activation="sigmoid")(x)
+    model = tf.keras.Model(inputs=input_features, outputs=output_layer)
 
-    learning_rate = hp_dict.get("learning_rate", 1e-3)
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+        optimizer=tf.keras.optimizers.Adam(
+            learning_rate=hp_dict.get("learning_rate", 1e-3)
+        ),
         loss="binary_crossentropy",
         metrics=[
             tf.keras.metrics.BinaryAccuracy(name="accuracy"),
@@ -85,7 +86,7 @@ def build_model_from_hyperparameters(
 def _get_serve_tf_examples_fn(
     model: tf.keras.Model, tf_transform_output: tft.TFTransformOutput
 ) -> Callable:
-    # Generate signature untuk TensorFlow Serving REST API
+    """Generate signature untuk TensorFlow Serving REST API."""
     model.tft_layer = tf_transform_output.transform_features_layer()
 
     @tf.function
@@ -103,7 +104,7 @@ def _get_serve_tf_examples_fn(
 
 
 def run_fn(fn_args: FnArgs) -> None:
-    # Callback untuk komponen Trainer TFX
+    """Callback untuk komponen Trainer TFX."""
     tf_transform_output = tft.TFTransformOutput(fn_args.transform_graph_path)
 
     train_dataset = input_fn(fn_args.train_files, tf_transform_output, batch_size=32)

@@ -49,6 +49,7 @@ packaging==20.9
 proto-plus==1.22.3
 protobuf==3.20.3
 pyarrow==10.0.1
+pylint==4.0.8
 setuptools==68.2.2
 tensorflow==2.13.0
 tensorflow-data-validation==1.14.0
