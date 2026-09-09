@@ -3,6 +3,9 @@ FROM tensorflow/serving:latest
 # Salin SavedModel hasil Pusher ke dalam container
 COPY serving_model/adult-income-model /models/adult-income-model
 
+# Salin file konfigurasi Prometheus ke dalam container
+COPY monitoring/prometheus.config /models/prometheus.config
+
 # Set variabel environment untuk nama model
 ENV MODEL_NAME=adult-income-model
 
@@ -14,4 +17,4 @@ CMD ["--port=8500", \
      "--rest_api_port=8501", \
      "--model_name=adult-income-model", \
      "--model_base_path=/models/adult-income-model", \
-     "--monitoring_config_file=/models/adult-income-model/monitoring_config.file"]
+     "--monitoring_config_file=/models/prometheus.config"]
