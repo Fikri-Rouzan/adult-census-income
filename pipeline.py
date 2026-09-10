@@ -26,7 +26,7 @@ from tfx.types.standard_artifacts import Model, ModelBlessing
 # Menentukan root direktori proyek secara absolut
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-PIPELINE_NAME = "fikri_rouzan-pipeline"
+PIPELINE_NAME = "main-pipeline"
 PIPELINE_ROOT = os.path.join(PROJECT_ROOT, PIPELINE_NAME)
 METADATA_PATH = os.path.join(PIPELINE_ROOT, "metadata.sqlite")
 DATA_ROOT = os.path.join(PROJECT_ROOT, "data")
