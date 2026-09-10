@@ -2,9 +2,13 @@
 
 ## 📌 Deskripsi
 
+Proyek ini dikembangkan untuk membangun alur kerja machine learning secara menyeluruh dalam memprediksi tingkat pendapatan individu berdasarkan karakteristik sosio-demografi dan latar belakang pekerjaan. Cakupan proyek meliputi pembersihan dan pra-pemrosesan data sensus, rekayasa fitur termasuk transformasi kolom target biner, pelatihan beberapa model klasifikasi, hingga evaluasi performa model untuk menghasilkan prediksi tingkat pendapatan yang akurat dan dapat diandalkan.
+
 ---
 
 ## 💾 Dataset
+
+Dataset ini bersumber dari database Biro Sensus Amerika Serikat tahun 1994 yang diekstraksi oleh Ronny Kohavi dan Barry Becker dengan kriteria filter khusus untuk memperoleh sampel data individu yang bersih. Data ini mencakup berbagai variabel demografi dan pekerjaan seperti usia, tingkat pendidikan, status pernikahan, jenis pekerjaan, ras, jenis kelamin, serta jumlah jam kerja per minggu dan bobot populasi. Pada proyek ini, dilakukan modifikasi khusus pada dataset berupa pembersihan tanda kutip dari seluruh header CSV serta pengubahan nilai pada kolom target pendapatan (income) menjadi bentuk biner, yaitu nilai 0 untuk pendapatan <= 50K dan nilai 1 untuk pendapatan > 50K. Sumber dataset asli dapat diakses langsung melalui halaman [Adult Census Income](https://www.kaggle.com/datasets/uciml/adult-census-income).
 
 ---
 
@@ -16,7 +20,8 @@
 | 🌱 **Environment**          | `Jupyter Notebook`                                                                                                                       |
 | 🧩 **Framework**            | `TensorFlow`                                                                                                                             |
 | ⚛️ **Libraries**            | `TFX`, `TensorFlow Transform`, `KerasTuner`, `TensorFlow Model Analysis`,<br>`TensorFlow Serving`, `python-dotenv`, `Requests`, `Pylint` |
-| ⚡ **Tools**                | `GitHub Codespaces`, `docker`                                                                                                            |
+| ⚡ **Tools**                | `GitHub Codespaces`, `docker`, `Prometheus`, `Grafana`                                                                                   |
+| 🚀 **Deployment**           | `Railway`                                                                                                                                |
 
 ---
 
@@ -127,3 +132,11 @@ docker network create mlops-net
       ```
     - Scroll ke bagian paling bawah, lalu klik **Save & test**.
     - Jika verifikasi berhasil, kamu sudah siap membuat dan mengonfigurasi dashboard visualisasi di Grafana.
+
+---
+
+## 🔧 Menjalankan Pylint
+
+```bash
+pylint modules/transform.py modules/tuner.py modules/trainer.py
+```
